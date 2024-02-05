@@ -85,6 +85,7 @@ REQUIRE_MIXED_CASE="true"
 RESTRICT_SPECIAL="false"
 RESTRICT_DIGITS="false"
 SIZE=18
+QJS=$(command -v qjs)
 
 error()
 {
@@ -173,7 +174,8 @@ while true; do
 done
 
 # Check for classpath existence.
-if [[ -z $RHINO_CLASSPATH ]] || ! [[ -f $RHINO_CLASSPATH ]]; then
+if ! [[ "$QJS" ]] &&
+  { [[ -z $RHINO_CLASSPATH ]] || ! [[ -f $RHINO_CLASSPATH ]] ; }; then
     error "rhino jar-file not found: $RHINO_CLASSPATH"
 fi
 
@@ -190,7 +192,21 @@ else
     error "invalid number of command-line arguments."
 fi
 
-exec "$JAVA" -classpath "$RHINO_CLASSPATH" \
+if [ "$QJS" ]; then
+  tmp=$(mktemp)
+  echo "SITE_TAG=\"$1\"
+  MASTERKEY=\"$MASTERKEY\"
+  SIZE=$SIZE
+  REQUIRE_DIGIT=$REQUIRE_DIGIT
+  REQUIRE_PUNCTUATION=$REQUIRE_PUNCTUATION
+  REQUIRE_MIXED_CASE=$REQUIRE_MIXED_CASE
+  RESTRICT_SPECIAL=$RESTRICT_SPECIAL
+  RESTRICT_DIGITS=$RESTRICT_DIGITS" > "$tmp"
+  cat "$LIB_DIR/passhash.js" >> "$tmp"
+  "$QJS" "$tmp"
+  rm "$tmp"
+else
+  exec "$JAVA" -classpath "$RHINO_CLASSPATH" \
     org.mozilla.javascript.tools.shell.Main \
     -e "SITE_TAG=\"$1\"" \
     -e "MASTERKEY=\"$MASTERKEY\"" \
@@ -201,3 +217,4 @@ exec "$JAVA" -classpath "$RHINO_CLASSPATH" \
     -e "RESTRICT_SPECIAL=$RESTRICT_SPECIAL" \
     -e "RESTRICT_DIGITS=$RESTRICT_DIGITS" \
     "$LIB_DIR/passhash.js"
+fi

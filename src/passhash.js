@@ -226,6 +226,25 @@ function binb2b64(binarray)
   return str;
 }
 
+function removeSpecialCharacters(sInput, seed, lenOut)
+{
+        var s = '';
+        var i = 0;
+        while (i < lenOut)
+        {
+                var j = sInput.substring(i).search(/[^a-z0-9]/i);
+                if (j < 0)
+                        break;
+                if (j > 0)
+                        s += sInput.substring(i, i + j);
+                s += String.fromCharCode((seed + i) % 26 + 65);
+                i += (j + 1);
+        }
+        if (i < sInput.length)
+                s += sInput.substring(i);
+        return s;
+}
+
 // IMPORTANT: This function should be changed carefully.  It must be
 // completely deterministic and consistent between releases.  Otherwise
 // users would be forced to update their passwords.  In other words, the
