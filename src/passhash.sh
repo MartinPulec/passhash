@@ -85,7 +85,7 @@ REQUIRE_MIXED_CASE="true"
 RESTRICT_SPECIAL="false"
 RESTRICT_DIGITS="false"
 SIZE=18
-QJS=$(command -v qjs)
+QJS=$(command -v qjs || command -v "$LIB_DIR/qjs")
 
 error()
 {
